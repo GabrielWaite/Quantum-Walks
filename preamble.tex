@@ -1,0 +1,56 @@
+% PAGE PROPERTIES
+\usepackage[margin=0.75in]{geometry}
+\usepackage{pdflscape}
+
+% FONT
+\usepackage[LGR,T1]{fontenc}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red},
+    citecolor={orange},
+    urlcolor={blue!80!black}
+}
+
+% GRAPHICS
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{quantikz}
+\usetikzlibrary{angles,
+                graphs,
+                graphs.standard, 
+                quantikz, 
+                decorations.pathmorphing,
+                patterns, 
+                patterns.meta,
+                shadows}
+\tikzset{snake it/.style={decorate, decoration=snake}}
+
+% MATHEMATICAL
+\usepackage{physics}
+\usepackage{amsmath,amsfonts}
+
+% CODE
+\usepackage{csvsimple}
+\usepackage{listings}
+\usepackage{minted}
+
+% LISTS and TABLES
+\usepackage{paralist}
+\usepackage{multirow}
+
+
+% BOXES and FRAMES
+\usepackage{mdframed}
+    \newmdtheoremenv{defn}{Definition}
+    \newmdtheoremenv{thrm}{Theorem}
+    \newmdtheoremenv{thrm*}{Theorem}
+    \newmdtheoremenv{hlo}{Overview}
+    \newmdtheoremenv{lmma}{Lemma}
+    \newmdtheoremenv{prop}{Proposition}
+% USEFUL MATH COMMANDS
+\newcommand{\ci}{\mathrm{i}}
+\newcommand{\ce}{\mathrm{e}}
+\newcommand{\bin}[1]{\mathtt{#1}}
+\DeclareMathAlphabet{\mathgtt}{LGR}{cmtt}{m}{n}

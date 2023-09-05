@@ -1,0 +1,254 @@
+\documentclass{article}
+
+\input{preamble}
+\tikzset{every picture/.style={/utils/exec={\ttfamily}}}
+\usepackage{setspace}
+\doublespacing
+
+\title{Report:\\ Quantum Walks}
+\author{Gabriel Waite}
+\date{August 2023}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+    {In this essay we give a brief introduction to both classical and quantum random walks, specifically the discrete-time variant and the Szegedy quantum walk. We investigate the close interplay between the two concepts and apply the quantum walk to Hamiltonian simulation via the method presented by Childs \cite{Childs09}. The aim is to develop intuition behind the motivation for quantum walks aided with an example of how such an idea can be used in real world problems.}
+\end{abstract}
+
+\section{Introduction}
+Random walks provide a rich and complex field of study. Such a simple concept has far reaching interdisciplinary uses. A notable example, as will be discussed here, is Hamiltonian simulation ---  the corner stone of quantum computing \cite{Feynman86}. Other important examples showing cost speed--ups relative to their classical counterparts include:
+\begin{inparaenum}[(a)]
+    \item quantum search $O(\sqrt{n})$ \cite{Santha08}, 
+    \item triangle finding, $O(n^{13/10})$ \cite{MSS05} reduced to $O(n^{5/4})$ \cite{LeGall14}, and
+    \item element distinctness, $O(n^{2/3})$ \cite{Ambainis14QW}
+\end{inparaenum}. Such algorithms owe to a quadratic improvement in resource costs \cite{DeWolf23}, moreover,
+\begin{equation}
+    \mathsf{S} + \frac{1}{\sqrt{\varepsilon}}\left(\mathsf{C} + \frac{1}{\sqrt{\delta}}\mathsf{U} \right)
+\end{equation}
+where $\mathsf{S},\mathsf{C},\mathsf{U}$ reflect: setup, checking and update costs respectively. The parameters $\varepsilon$ and $\delta$ refer to measures of the system. In the classical setting the search problem hosts $1/\varepsilon$ and $1/\delta$ factors! 
+
+
+Given the subject area is particularly broad we will present only a brief and narrow analysis on the relevant prerequisites. For a better and full appreciation for the topic cf. \cite{Kempe03,Santha08,VenegasAndraca12}
+
+\section{Classical Random Walk}
+A random walk describes a procedure where each successive step is determined by a random characteristic. This is related to the notion of a stochastic process which describes the evolution of random sequences. The concept of random walks analysed in this essay are classed as Markovian processes --- the current state of the system at some time, $X(t)$, is independent of the past. The rubric of classical random walks (CRW) is trivial. Most readers will be familiar with the notion of coin flipping as a random process in the physical world; it turns out that the idea of a CRW (even a quantum random walk as we will see) can be easily be motivated in this manner. Consider a walker placed at the origin of a one--dimensional line of discrete positions. Let this walker’s movements be constrained by the outcome of a two sided fair coin toss such that \textsc{Heads} shifts the walker one position to the right and \textsc{Tails} one position left. The familiar coin toss scenario now dictates the path this walker follows. 
+
+Notice the flipping of a coin at any point along this journey is independent of the previous outcomes --- this is the Markovian nature of the problem. One could modify the situation to a non--Markovian system by saying that the coin can alter its bias, dependent on previous outcomes. We will not analyse such structures here and so defer the reader to [...] for more information about non--Markovian processes. 
+
+After $T$ coin tosses it is natural to ask: \emph{where is the walker likely to be}? There are two avenues to this question: \begin{inparaenum}[(a)]\item what is the \emph{expected} position, or \item what is the probability of the walker being at position $\xi$ after $\tau$ steps. \end{inparaenum} The astute reader may have correctly guessed the expected position to be situated at the origin; the reason falls on the expected equality of the outcomes. Moreover, a fair coin places an equal likelihood on both outcomes. An intuitive reason for this follows from the fact that the actions of the coin toss outcomes are counterproductive meaning, heuristically, \textsc{Heads} cancels \textsc{Tails} --- each step of the walk is balanced. For a more abstract treatment of this conclusion… [maths]
+
+The expectation value of the position can be understood in simple steps due to the stochastic nature of the problem. Since each individual walk event is independent of the rest, the expectation value of the walker's position can be found,
+\begin{equation}
+    \mathbb{E}[x] = \sum_{t=1}^T \mathbb{E}[w_t]
+\end{equation}
+such that $\mathbb{E}[w_t] = (-1)\cdot 1/2 + (+1)\cdot 1/2 =0$. Clearly then $\mathbb{E}[x]=0$. Note that for a biased coin, with probability $p_{\textsc{Heads}}\neq 1/2$, it can be shown $\mathbb{E}[w_t] = 2p-1$, giving $\mathbb{E}[x] = T(2p-1)$. An interesting and important extension to this notion is the variance of the random walk. Physically, the variance of the random walk is the expected distance away from the origin
+
+Basic code can produce the distribution shown in fig.X which shows the familiar Gaussian curve. Furthermore, this figure 
+
+A fun exercise is to consider the walk defined above when \textsc{Heads} implies a shift right but of two steps and \textsc{Tails} remains the same.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+            xtick={-20,-10,0,10,20},
+            xticklabels={-20,-10,0,10,20},
+            xlabel={Position},
+            ytick={0,50,100,150},
+            yticklabels={0,50,100,150},
+            ylabel={Freq.}
+        ]
+            \addplot table [x=pos_x, y=freq_y, col sep=comma] {dataeven.csv};
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Distribution of positions using a balanced coin after $T=20$ steps, conducted $1000$ times. Found using Python 3 code \ref{app:1}}
+    \label{fig:CRW}
+\end{figure} 
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|} 
+\hline
+    -5&-4&-3&-2&-1&0&1&2&3&4&5\\\hline\hline
+     0&0 &0 &0 &0 &1&0&0&0&0&0\\\hline
+     0&0 &0 &0 &$\frac{1}{2}$ &0&$\frac{1}{2}$&0&0&0&0\\\hline
+     0&0 &0 &0 &0 &1&0&0&0&0&0\\\hline
+     0&0 &0 &0 &0 &0&0&0&0&0&0\\\hline
+     0&0 &0 &0 &0 &1&0&0&0&0&0\\\hline
+ \hline
+\end{tabular}
+\end{center}
+
+
+
+
+\paragraph{Applications.} Some further applications of classical random walks include: Brownian motion [] which describes the random motion of particles and thusly requires continuous--time random walks. ...
+
+\section{Quantum Random Walk}
+Quantising the discrete time Markov chains is not as straightforward as it may seem. However, we have already introduce the notion and the tools needed to extend this idea into the quantum regime. When considering the classical 1D walk, the evolution of the system was dependent on the coin we had, i.e. the coin dictated the direction of the walk. It turns out that when extending to quantum walks, the coin state can be important! Moreover, we can show that attempting to create some unitary evolution without the coin state has some problems. Consider some `step oracle' that has an analogous effect the the \textsc{crw} concept, moreover, let $F$ act on position states $\ket{j}$ as,
+\begin{equation}
+    F\ket{j} = \frac{1}{\sqrt{2}}\left(\ket{j-1} + \ket{j+1} \right)
+\end{equation}
+The action of $F$ is as we might expect for a quantum walk --- one step leaves us in a superposition of possible states. In a quantum system we expect unitary dynamics. We can prove that $F$ does not produce unitary dynmaics by contradiction. Consider two distinict posotion, $\ket{\xi}$ and $\ket{\eta}$, trivially, $\braket{\eta}{\xi}=0$. Assume that $F$ is unitary, by explicit calculation,
+\begin{equation*}
+    \braket{\eta}{\xi} = \bra{\eta}F^\dagger F\ket{\xi} = \frac{1}{2}\left(\bra{\eta-1}+\bra{\eta+1} \right)\left(\ket{\xi-1}+\ket{\xi+1} \right)
+\end{equation*}
+Since $\eta\neq\xi \implies \eta\pm1\neq\xi\pm1$ and therefore we are left with,
+\begin{equation*}
+    \braket{\eta}{\xi} = \frac{1}{2}\left(\bra{\eta-1}\ket{\xi+1}+\bra{\eta+1}\ket{\xi-1} \right)
+\end{equation*}
+By letting $\xi=\eta\pm2$ we can produce a non--zero result, contradicting $\braket{\eta}{\xi}=0$. This must mean $F$ is in fact not unitary! We must be more careful when extend the notion of a classical random walk to the quantum regime.
+
+It order to produce a true unitary that produces one step of the discrete--time walk and hence preserve the inner product, the state of the system now consists of the walker's position \emph{and} the state of the coin. In this regard, the state space is defined by $\mathcal{H} = \mathcal{H}_{\text{coin}}\times\mathcal{H}_{\text{pos.}}$ such that a general state is of the form, $\ket{\psi}=\ket{c,x}$. A combination of the Hadamard coin and come general coin state on the Bloch sphere, $\ket{c}\in\partial B^3$, is sufficient to reproduce all possible walk patterns for the 1D quantum walk \cite{portugalbook}
+
+
+
+Notion of a random walk can be used in proof e.g. \cite{BBT06}
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}
+        \node[scale=1]{
+            \begin{quantikz}[thin lines]
+                \lstick{$\mathtt{\ket{c}}$}&\gate{\mathtt{H}}&\octrl{1}&\ctrl{1}&\gate{\mathtt{H}}&\qw\ \ldots\ &\gate{\mathtt{H}}&\octrl{1}&\ctrl{1}&\qw\\
+                \lstick{$\mathtt{\ket{x}}$}&\qw&\gate{\mathtt{Add.}}&\gate{\mathtt{Sub.}}&\qw&\qw\ \ldots \ &\qw&\gate{\mathtt{Add.}}&\gate{\mathtt{Sub.}}&\qw
+            \end{quantikz}
+        };
+    \end{tikzpicture}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+Furthermore, fig. \ref{} can be understood as a repeated instance of a technique known as \emph{linear combination of unitaries} \cite{CW12}. A straightforward calculation of one step of the walk shows the state of system as,
+\begin{equation}
+    \ket{c,x} \longrightarrow \frac{1}{\sqrt{2}}\left( (\cos\frac{\theta}{2} + e^{i\phi}\sin\frac{\theta}{2})\ket{0,x+1} + (\cos\frac{\theta}{2} - e^{i\phi}\sin\frac{\theta}{2})\ket{1,x-1}\right)
+\end{equation}
+for some general coin input state $\ket{c}\in\partial B^3$ and a starting position $\ket{x}$.
+
+This typw of quantum walk is specific to a set of graphs, namely, those undirected $d$--regular graphs...
+
+It is not \emph{essential} for a quantum walk to have the coin space however. By removing the coin from the system, we lose the intuition above and instead turn to the work of Szegedy by showing a how a carefully crafted series of reflection operators are sufficient to produce the  random walk effect while lying in a quantum space!
+
+\subsection{Szegedy Quantum Walk}
+The Szegedy quantum walk is a discrete time variant that does not employ the use of a coin and hence the degrees of freedom are reduced relative to the previous formulation. The cost of removing the coin comes at the price of introducing a series of reflections --- this is how the walk propagates.
+
+Szegedy walks occur on bipartite double cover graphs which poses the property such that the vertices fall into two disjoint sets of equal cardinality, $\mathsf{X}$ and $\mathsf{Y}$. Such graphs can be trivially constructed from the underlying graph of the problem via the duplication process, cf. fig. \ref{...}
+
+Define,
+\begin{align}
+    \phi_x &= \sum_{y \in \mathsf{Y}} \sqrt{p_{xy}}\ket{x,y} \\
+    \psi_y &= \sum_{x\in\mathsf{X}} \sqrt{q_{yx}} \ket{x,y}
+\end{align}
+which in turn describe superpositions of the edges leading from a vertex $x\in\mathsf{X}$ to its neighbours in $\mathsf{Y}$, vice versa. 
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}
+    \def\d{1.5}
+        \node (a) at (0,0) {a};
+        \node (b) at (\d,0) {b};
+        \node (c) at (0,\d) {c};
+        \node (d) at (\d,\d) {d};
+        \node (e) at (2*\d,\d/2) {e};
+        \graph{(a)--(b);(a)--(c);(b)--(d);(c)--(d);(d)--(e);
+                };
+    \end{tikzpicture}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+% \begin{figure}[h!]
+%     \centering
+%     \begin{tikzpicture}
+%     \def\d{1.5}
+%         \node (a) at (-\d,\d) {a};
+%         \node (b) at (-\d,0) {b};
+%         \node (c) at (-\d,-\d) {c};
+%         \node[red] (d) at (0,0) {d};
+%         \node[blue] (e) at (\d,0) {e};
+%         \node (f) at (2*\d,\d) {f};
+%         \node (g) at (2*\d,-\d) {g};
+%         \graph{{(a),(b),(c)}--(d);
+%                 (d)<-[red,thick](e);
+%                 (e)--{(f),(g)};
+%                 };
+%     \end{tikzpicture}
+    
+%     \begin{tikzpicture}
+%     \def\d{1.5}
+%         \node[blue] (a) at (-\d,\d) {a};
+%         \node[blue] (b) at (-\d,0) {b};
+%         \node[blue] (c) at (-\d,-\d) {c};
+%         \node[red] (d) at (0,0) {d};
+%         \node[blue] (e) at (\d,0) {e};
+%         \node (f) at (2*\d,\d) {f};
+%         \node (g) at (2*\d,-\d) {g};
+%         \graph{{(a),(b),(c)}->[red,thick](d);
+%                 (d)<-[red,thick](e);
+%                 (e)--{(f),(g)};
+%                 };
+%     \end{tikzpicture}
+
+%     \begin{tikzpicture}
+%     \def\d{1.5}
+%         \node[red] (a) at (-\d,\d) {a};
+%         \node[red] (b) at (-\d,0) {b};
+%         \node[red] (c) at (-\d,-\d) {c};
+%         \node[blue] (d) at (0,0) {d};
+%         \node[red] (e) at (\d,0) {e};
+%         \node (f) at (2*\d,\d) {f};
+%         \node (g) at (2*\d,-\d) {g};
+%         \graph{{(a),(b),(c)}<-[red,thick](d);
+%                 (d)->[red,thick](e);
+%                 (e)--{(f),(g)};
+%                 };
+%     \end{tikzpicture}
+%     \caption{Caption}
+%     \label{fig:enter-label}
+% \end{figure}
+
+\section{Hamiltonian Simulation via Quantum Walk}
+
+\newpage
+\bibliographystyle{alpha}
+\bibliography{ref}
+\newpage
+\appendix
+\section{Classical Random Walk Code}\label{app:1}
+\begin{singlespace}
+\begin{minted}[mathescape, linenos]{python}
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+    
+class randomWalk:
+    def __init__(self,steps,iterations=10):
+        self.steps=steps
+        self.iterations=iterations
+        
+    def walk(self) -> position:
+        position=0
+        for i in [random.randint(0,1) for j in range(self.steps)]:
+            if i==1:
+                position+=1
+            else:
+                position-=1
+                
+        return position
+    
+    def distData(self) -> position data:
+        pos_x,freq_y = [i for i in range(-self.steps,self.steps + 1)],\
+                         [0 for i in range(-self.steps,self.steps + 1)]
+        count=0
+        while count<self.iterations:
+            p,r = self.walk(),p + self.steps
+            freq_y[r]+=1 
+            count+=1
+        
+        return pos_x,freq_y
+    
+    def distPlot(self) -> walk plot:
+        return plt.plot(self.distData()[0],self.distData()[1])
+\end{minted}
+\end{singlespace}
+\end{document}
