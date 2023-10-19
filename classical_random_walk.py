@@ -1,15 +1,19 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import csv
     
 class randomWalk:
-    def __init__(self,steps,iterations=10):
+    def __init__(self,steps,samples=1000,bias=0):
         self.steps=steps
-        self.iterations=iterations
+        self.samples=samples
+        self.probability=1/2 + bias/2
         
-    def walk(self) -> position:
+    def finalPosition(self):
         position=0
-        for i in [random.randint(0,1) for j in range(self.steps)]:
+        weight=[1 - self.probability, self.probability]
+        
+        for i in np.random.choice([0,1], self.steps, p=weight):
             if i==1:
                 position+=1
             else:
@@ -17,16 +21,31 @@ class randomWalk:
                 
         return position
     
-    def distData(self) -> position data:
+    def walkData(self):
         pos_x,freq_y = [i for i in range(-self.steps,self.steps + 1)],\
                          [0 for i in range(-self.steps,self.steps + 1)]
         count=0
-        while count<self.iterations:
-            p,r = self.walk(),p + self.steps
+        while count<self.samples:
+            p = self.finalPosition()
+            r = p + self.steps
             freq_y[r]+=1 
             count+=1
         
         return pos_x,freq_y
     
-    def distPlot(self) -> walk plot:
-        return plt.plot(self.distData()[0],self.distData()[1])
+    def walkPlot(self):
+        return plt.plot(self.walkData()[0],self.walkData()[1])
+    
+    def exportToCSV(self, name='randomwalkdata'):
+        data = [(a, x, y) for a, (x, y) in enumerate(zip(self.walkData()[0], self.walkData()[1]))]
+
+        file = "{}.csv".format(name)
+
+        with open(file, mode="w", newline="") as f:
+            writer = csv.writer(f)
+
+            writer.writerow(["a", "pos_x", "freq_y"])
+
+            writer.writerows(data)
+
+        return "Data saved to {}".format(file)
